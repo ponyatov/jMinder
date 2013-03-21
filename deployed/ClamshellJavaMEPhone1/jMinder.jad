@@ -1,0 +1,7 @@
+MIDlet-Jar-Size: 358
+MIDlet-Jar-URL: jMinder.jar
+MIDlet-Name: jMinder
+MIDlet-Vendor: Dmitry Ponyatov
+MIDlet-Version: 0.0.1
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0
