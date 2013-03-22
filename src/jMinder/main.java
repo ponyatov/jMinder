@@ -1,25 +1,50 @@
 package jMinder;
 
-import javax.microedition.lcdui.Command;
-import javax.microedition.lcdui.CommandListener;
-import javax.microedition.lcdui.Display;
-import javax.microedition.lcdui.Displayable;
-import javax.microedition.lcdui.Form;
 import javax.microedition.midlet.MIDlet;
-import javax.microedition.midlet.MIDletStateChangeException;
+import com.sun.lwuit.Display;
+import com.sun.lwuit.Form;
 
-public class main extends MIDlet implements CommandListener {
+public class main extends MIDlet {
+
+	public void destroyApp(boolean unconditional) { 
+//		throws MIDletStateChangeException {
+		notifyDestroyed(); 
+	} 
+
+	public void pauseApp() {}
+
+	public void startApp() { // throws MIDletStateChangeException {
+		// TODO Auto-generated method stub
+		Display.init(this);
+		Form frmMain = new Form("jMinder");
+		frmMain.show();
+	}
+}
+
+/*
+public class main extends MIDlet { // implements CommandListener {
 
 	Display display = Display.getDisplay(this);
 
-	Form frmMain = new Form("jMinder");
+	Command cmdNew    = new Command("New", Command.EXIT, 0);
+	Command cmdDone   = new Command("Done", Command.OK, 9);
+	Command cmdEdit   = new Command("Edit", Command.OK, 7);
+	Command cmdRemove = new Command("Remove", Command.OK, 5);
+	Command cmdSync   = new Command("Sync", Command.OK, 3);
+	Command cmdExit   = new Command("Exit", Command.OK, 0);
 	
-	Command cmdExit   = new Command("Exit", Command.EXIT, 0);
-	Command cmdNew    = new Command("New", Command.OK, 0);
-	Command cmdEdit   = new Command("Edit", Command.OK, 0);
-	Command cmdGet    = new Command("Get", Command.OK, 0);
-	Command cmdDone   = new Command("Done", Command.OK, 0);
-	Command cmdRemove = new Command("Remove", Command.OK, 0);
+	String[] pool = {
+			"X","Y","J",
+			"X","Y","J",
+			"X","Y","J",
+			"X","Y","J",
+			"X","Y","J",
+			"X","Y","J",
+			"X","Y","J"
+			};
+	
+	Calendar calendar = Calendar.getInstance();
+	DateField datefield = new DateField("DF", DateField.DATE_TIME);
 	
 	public main() {
 	// TODO Auto-generated constructor stub
@@ -32,21 +57,24 @@ public class main extends MIDlet implements CommandListener {
 	}
 
 
-	protected void pauseApp() {
-		// TODO Auto-generated method stub
-	}
-
 	protected void startApp() throws MIDletStateChangeException {
 		// TODO Auto-generated method stub
 		// add menu commands
 		frmMain.addCommand(cmdNew);
-		frmMain.addCommand(cmdEdit);
-		frmMain.addCommand(cmdGet);
 		frmMain.addCommand(cmdDone);
+		frmMain.addCommand(cmdEdit);
+		frmMain.addCommand(cmdSync);
 		frmMain.addCommand(cmdRemove);
 		frmMain.addCommand(cmdExit);
-		// forming task list
+		// forming screen header
+		datefield.setDate(calendar.getTime());
+		frmMain.append(datefield);
+		frmMain.append(calendar.getTime().toString());
 		
+		frmMain.append("\n"+cv.w()+"x"+cv.h()+"\n");
+		
+		// forming task list
+		for (int i=0;i<11;i++) frmMain.append(pool[i]+"\n");
 		// set listener
 		frmMain.setCommandListener(this);
 		// show form
@@ -64,3 +92,4 @@ public class main extends MIDlet implements CommandListener {
 	}
 
 }
+*/
