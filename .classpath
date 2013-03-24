@@ -3,6 +3,5 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="res"/>
 	<classpathentry kind="con" path="org.elipse.mtj.JavaMEContainer/Oracle Java(TM) Platform Micro Edition SDK 3.2/JavaMEPhone1"/>
-	<classpathentry kind="lib" path="C:/Java/LWUIT_1_5-NoBB-RC2/lib/LWUIT_MIDP.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
