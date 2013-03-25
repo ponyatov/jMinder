@@ -15,6 +15,25 @@ import javax.microedition.lcdui.List;
 import javax.microedition.lcdui.StringItem;
 import javax.microedition.midlet.MIDlet;
 
+class Task {
+	String Title;
+	Calendar TS;
+	int DeadLine;
+	int Age;
+	public Task(String Title) {
+		this.Title = Title; 
+		this.TS = Calendar.getInstance();
+		this.DeadLine = 11;
+		this.Age = 0;
+	}
+	public String getDeadLine() { return Integer.toString(DeadLine)+"s"; }
+	public String getTitle() { return Title; }
+	public void tick() {
+		Age++;
+		DeadLine--; 
+		}
+}
+
 public class main extends MIDlet implements CommandListener, ItemCommandListener {
 
 	public void destroyApp(boolean unconditional) { notifyDestroyed(); }
@@ -30,9 +49,9 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 	Command cmdOK = new Command("OK", Command.OK, 0);
 	Command cmdCancel = new Command("Cancel", Command.CANCEL, 0);
 
-	String[] Tasks = {"jMinder","Cortex Book","Milling"};
+	Task[] Tasks = {new Task("jMinder"),new Task("ARMatura"),new Task("Milling")};
 	
-	List lstTasks = new List("Tasks",List.EXCLUSIVE,Tasks,null);
+	List lstTasks = new List("Tasks",List.EXCLUSIVE);
 	Command cmdTasks = new Command("Tasks", Command.OK, 1);
 	
 	StringItem fldTS = new StringItem("TS", "date&time\n");//, StringItem.BUTTON);
@@ -40,9 +59,7 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 	String[] WEEKDAYS = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 	
 	Timer timer = new Timer();
-	TimerTask timer1s = new TimerTask() { public void run() { 
-		updTS(); 
-	}};
+	TimerTask timer1s = new TimerTask() { public void run() { updMain(); }};
 	
 	private String i2s2(int x) {
 		if (x>=10) 
@@ -62,6 +79,16 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 		String ss = i2s2(calendar.get(Calendar.SECOND));
 		fldTS.setLabel(wd+" "+dd+"."+mo+"."+yy);
 		fldTS.setText(hh+":"+mi+":"+ss+"\n");
+		frmMain.append(fldTS);
+	}
+	
+	private void updMain() {
+		frmMain.deleteAll();
+		updTS();
+		for (int i=0;i<Tasks.length;i++) {
+			Tasks[i].tick();
+			frmMain.append(new StringItem(Tasks[i].getDeadLine(), Tasks[i].getTitle()+"\n"));
+		}
 	}
 	
 	public void startApp() { // throws MIDletStateChangeException {
@@ -72,12 +99,10 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 		frmMain.addCommand(cmdTasks);
 		frmMain.setCommandListener(this);
 		// fldTS
-		frmMain.append(fldTS);
 		fldTS.setItemCommandListener(this);
-		updTS();
 		timer.schedule(timer1s, 0, 1000); // ms
 		// tasks
-		for (int i=0;i<Tasks.length;i++) frmMain.append(Tasks[i]+"\n");
+		updMain();
 		// new
 		frmNew.addCommand(cmdOK);
 		frmNew.addCommand(cmdCancel);
@@ -115,39 +140,4 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 	}
 
 }
-
-/*
-
- // implements ActionListener {
-
-	public void destroyApp(boolean arg0) { notifyDestroyed(); }
-	public void pauseApp() { }
 	
-	Command cmdExit;
-	
-	public void startApp() { // throws MIDletStateChangeException {
-		Display.init(this);
-		// main form
-		Image bgImage=null;
-		try {
-			 bgImage = Image.createImage("/lenin-240x320.png");
-		} catch (IOException e) {e.printStackTrace();}
-		frmMain.getStyle().setBgImage(bgImage);
-		// menu
-		frmMain.addCommand(cmdExit);
-		frmMain.l
-		// time bar
-		Date date = new Date();
-		Label lblTime = new Label(date.toString());
-		frmMain.addComponent(lblTime);
-		// show form
-		frmMain.show();
-	}
-	
-	public void actionPerformed(ActionEvent event) {
-		Command c = event.getCommand();
-		if (c==cmdExit) destroyApp(true);
-	}
-}
-
-*/
