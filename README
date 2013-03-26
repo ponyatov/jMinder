@@ -5,7 +5,7 @@ Business logic prototype for Programmable Watch Clock (PWC)
 
 includes: 
 - TODO Reminder tool for J2ME devices
-- Clock & Calendar functions, incl. sunrise/sunset & multi timezone
+- Clock & Calendar functions, (?) incl. sunrise/sunset & multi timezone
 - Alarm Clock incl. onetime and periodical alarms
 - flashlighter using LCD glowing, and Morze code blinker
 - Profile manager switches profiles by alarms and manually
@@ -21,3 +21,7 @@ includes:
 (c) Dmitry Ponyatov <dponyatov@gmail.com>, GPLv3 software license
 
 home @ https://github.com/ponyatov/jMinder.git
+
+repositories: 
+main   origin  git@github.com:ponyatov/jMinder.git
+mirror bb      ssh://git@bitbucket.org/ponyatov/jminder.git
