@@ -51,10 +51,13 @@ public class jMinder extends MIDlet implements CommandListener {
 	String[] WEEKDAYS = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 	
 	Timer timer = new Timer();
-	TimerTask timer1s = new TimerTask() { public void run() { updTS(); updMain(); }};
+	TimerTask timer1s = new TimerTask() { public void run() { 
+		Tasks_reSort();
+		updTS(); updMain(); 
+		}};
 	TimerTask timer1h = new TimerTask() { public void run() { 
-		for (int i=0;i<Tasks.size();i++) { ((Task) Tasks.elementAt(i)).tick(); }}
-	};
+		for (int i=0;i<Tasks.size();i++) { ((Task) Tasks.elementAt(i)).tick(); }
+		}};
 	
 	Canvas cnvLigher = new Canvas() {
 		protected void paint(Graphics g) {
@@ -93,6 +96,20 @@ public class jMinder extends MIDlet implements CommandListener {
 		}
 	}
 	
+	private void Tasks_reSort() {
+		Task A,B;
+		if (Tasks.size()>1) {
+			for (int i=0;i<Tasks.size()-1;i++) {
+				A = (Task) Tasks.elementAt(i  );
+				B = (Task) Tasks.elementAt(i+1);
+				if (A.DeadLine > B.DeadLine) {
+					Tasks.setElementAt(B,i  );
+					Tasks.setElementAt(A,i+1);
+				}
+			}
+		}
+	}
+
 	private void updTasks() {
 		lstTasks.deleteAll();
 		for (int i=0;i<Tasks.size();i++) {
@@ -102,7 +119,7 @@ public class jMinder extends MIDlet implements CommandListener {
 	}
 	
 	int MS_IN_SECOND =1000;
-	int MS_IN_HOUR   =1000;//*60*60;
+	int MS_IN_HOUR   =1000*60*60;
 
 	Random random = new Random();
 	int RandRange(int max) { return Math.abs(random.nextInt()) % max + 1; }
