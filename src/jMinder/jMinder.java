@@ -26,9 +26,10 @@ public class jMinder extends MIDlet implements CommandListener {
 	
 	Display display = Display.getDisplay(this);
 	Form frmMain = new Form("jMinder");
-	Command cmdNew = new Command("New", Command.EXIT, 0);
-	Command cmdDelete = new Command("Delete", Command.EXIT, 0);
-	Command cmdEdit = new Command("Edit", Command.EXIT, 0);
+	Command cmdNew = new Command("New", Command.OK, 0);
+	Command cmdNewOK = new Command("Ok", Command.CANCEL, 0);
+	Command cmdDelete = new Command("Delete", Command.OK, 0);
+	Command cmdEdit = new Command("Edit", Command.OK, 0);
 	Command cmdExit = new Command("Exit", Command.OK, 0);
 	
 	Form frmNew = new Form("new");
@@ -37,7 +38,6 @@ public class jMinder extends MIDlet implements CommandListener {
 	Command cmdCancel = new Command("Cancel", Command.CANCEL, 0);
 	TextField fldTitle = new TextField("Title", "", 1024, TextField.ANY);
 	TextField fldDeadLine = new TextField("DeadLine [hours]", "1", 2, TextField.DECIMAL);
-	Command cmdNewOK = new Command("Ok", Command.CANCEL, 0);
 
 	Form frmEdit = new Form("Edit");
 
