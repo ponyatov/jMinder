@@ -1,7 +1,22 @@
 jMinder
 =======
 
-TODO Reminder tool for J2ME devices
+Business logic prototype for Programmable Watch Clock (PWC)
+
+includes: 
+- TODO Reminder tool for J2ME devices
+- Clock & Calendar functions, incl. sunrise/sunset & multi timezone
+- Alarm Clock incl. onetime and periodical alarms
+- flashlighter using LCD glowing, and Morze code blinker
+- Profile manager switches profiles by alarms and manually
+- Tiny electronic maps with positioning API usage
+? Navigation using 6axes accelerometer, electronic compass and GPS
+- online Weather services client
+? Weather station with temperature, pressure and humidity sensors
+? Sports & medical monitor using embedded/external pulse, pressure, bike cadence & wheel rotation sensors 
+? emergency beacon
+
+? = planned in PWC but have problems in J2ME realizing
 
 (c) Dmitry Ponyatov <dponyatov@gmail.com>, GPLv3 software license
 
