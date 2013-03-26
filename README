@@ -13,7 +13,7 @@ includes:
 ? Navigation using 6axes accelerometer, electronic compass and GPS
 - online Weather services client
 ? Weather station with temperature, pressure and humidity sensors
-? Sports & medical monitor using embedded/external pulse, pressure, bike cadence & wheel rotation sensors 
+? Sports & medical monitor using embedded/external pulse, pressure, bike cadence & wheel rotation sensors
 ? emergency beacon
 
 ? = planned in PWC but have problems in J2ME realizing
@@ -22,6 +22,8 @@ includes:
 
 home @ https://github.com/ponyatov/jMinder.git
 
-repositories: 
+repositories:
+
 main   origin  git@github.com:ponyatov/jMinder.git
 mirror bb      ssh://git@bitbucket.org/ponyatov/jminder.git
+
