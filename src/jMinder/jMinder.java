@@ -13,33 +13,26 @@ import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Graphics;
-import javax.microedition.lcdui.Item;
-import javax.microedition.lcdui.ItemCommandListener;
 import javax.microedition.lcdui.List;
 import javax.microedition.lcdui.StringItem;
 import javax.microedition.lcdui.TextField;
 import javax.microedition.midlet.MIDlet;
 
 class Task {
-	String Title;
-	Calendar TS;
-	int DeadLine;
-	int Age;
 	public Task(String Title, int DeadLine) {
 		this.Title = Title; 
-		this.TS = Calendar.getInstance();
 		this.DeadLine = DeadLine;
-		this.Age = 0;
 	}
-	public String getDeadLine() { return Integer.toString(DeadLine)+"h"; }
+
+	String Title;
 	public String getTitle() { return Title; }
-	public void tick() {
-		Age++;
-		DeadLine--; 
-		}
+	
+	int DeadLine;
+	public String getDeadLine() { return Integer.toString(DeadLine)+"h"; }
+	public void tick() { DeadLine--; }
 }
 
-public class main extends MIDlet implements CommandListener, ItemCommandListener {
+public class jMinder extends MIDlet implements CommandListener {
 
 	public void destroyApp(boolean unconditional) { notifyDestroyed(); }
 
@@ -67,7 +60,7 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 	List lstTasks = new List("Tasks",List.EXCLUSIVE);
 	Command cmdTasks = new Command("Tasks", Command.OK, 1);
 	
-	StringItem fldTS = new StringItem("TS", "date&time\n");//, StringItem.BUTTON);
+	StringItem fldTS = new StringItem("TS", "date&time\n");
 	Calendar calendar = Calendar.getInstance();
 	String[] WEEKDAYS = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 	
@@ -123,48 +116,45 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 	}
 	
 	int MS_IN_SECOND =1000;
-	int MS_IN_HOUR   =1000*60*60;
+	int MS_IN_HOUR   =1000;//*60*60;
 
 	Random random = new Random();
+	int RandRange(int max) { return Math.abs(random.nextInt()) % max + 1; }
 
-	public void startApp() { // throws MIDletStateChangeException {
+	public void startApp() {
 		// init Tasks
-		Tasks.addElement(new Task("jMinder",random.nextInt()));
-		Tasks.addElement(new Task("ARMatura",random.nextInt()));
-		Tasks.addElement(new Task("GrowerBox",random.nextInt()));
-		// def menus
+		Tasks.addElement(new Task("jMinder",RandRange(11)));
+		Tasks.addElement(new Task("ARMatura",RandRange(11)));
+		Tasks.addElement(new Task("GrowerBox",RandRange(11)));
 		// main
 		frmMain.addCommand(cmdNew);
 		frmMain.addCommand(cmdExit);
 		frmMain.addCommand(cmdTasks);
 		frmMain.setCommandListener(this);
-		// fldTS
-		fldTS.setItemCommandListener(this);
-		timer.schedule(timer1s, MS_IN_SECOND, MS_IN_SECOND);
-		timer.schedule(timer1h, MS_IN_HOUR, MS_IN_HOUR);
-		// tasks
 		updMain();
 		// new
 		frmNew.append(fldTitle);
 		frmNew.append(fldDeadLine);
 		frmNew.addCommand(cmdNewOK);
+		frmNew.setCommandListener(this);
 		// edit
 		frmEdit.addCommand(cmdOK);
 		frmEdit.addCommand(cmdCancel);
 		frmEdit.setCommandListener(this);
-		//frmNew.addCommand(cmdCancel);
-		frmNew.setCommandListener(this);
 		// tasks
-		updTasks();
 		lstTasks.addCommand(cmdOKex);
 		lstTasks.addCommand(cmdNew);
 		lstTasks.addCommand(cmdDelete);
 		lstTasks.addCommand(cmdEdit);
 		lstTasks.setCommandListener(this);
+		updTasks();
 		// ligher
 		cnvLigher.addCommand(cmdOK);
 		cnvLigher.setCommandListener(this);
 		frmMain.addCommand(cmdLighter);
+		// shed timers
+		timer.schedule(timer1s, MS_IN_SECOND, MS_IN_SECOND);
+		timer.schedule(timer1h, MS_IN_HOUR, MS_IN_HOUR);
 		// show main form
 		display.setCurrent(frmMain);
 	}
@@ -190,7 +180,7 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 		}
 		if (d==frmEdit) {
 			updTasks(); updMain();
-			display.setCurrent(frmMain);
+			display.setCurrent(lstTasks);
 		}
 		if (d==lstTasks) {
 			if (c==cmdOKex) display.setCurrent(frmMain);
@@ -201,18 +191,7 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 				updTasks(); updMain();
 			}
 		}
-		if (d==cnvLigher) {
-			if (c==cmdOK) display.setCurrent(frmMain);
-			//if (c==cmdMorze) display.setCurrent(frmMorze);
-		}
-	}
-
-	public void commandAction(Command c, Item item) {
-		System.out.println(item.toString()+"-->"+c.toString());
-		if (item==fldTS) {
-			
-		}
+		if (d==cnvLigher) { display.setCurrent(frmMain); }
 	}
 
 }
-	
