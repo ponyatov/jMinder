@@ -1,15 +1,18 @@
 package jMinder;
 
 import java.util.Calendar;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Form;
+import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.ItemCommandListener;
 import javax.microedition.lcdui.List;
@@ -57,6 +60,8 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 	TextField fldDeadLine = new TextField("DeadLine [hours]", "1", 2, TextField.DECIMAL);
 	Command cmdNewOK = new Command("Ok", Command.CANCEL, 0);
 
+	Form frmEdit = new Form("Edit");
+
 	Vector Tasks = new Vector();
 	
 	List lstTasks = new List("Tasks",List.EXCLUSIVE);
@@ -71,6 +76,14 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 	TimerTask timer1h = new TimerTask() { public void run() { 
 		for (int i=0;i<Tasks.size();i++) { ((Task) Tasks.elementAt(i)).tick(); }}
 	};
+	
+	Canvas cnvLigher = new Canvas() {
+		protected void paint(Graphics g) {
+			g.setColor(0xFFFFFF);
+			g.fillRect(0,0,g.getClipWidth(),g.getClipHeight());
+		}
+	};
+	Command cmdLighter = new Command("Lighter", Command.OK, 0);
 	
 	private String i2s2(int x) {
 		if (x>=10) 
@@ -112,10 +125,13 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 	int MS_IN_SECOND =1000;
 	int MS_IN_HOUR   =1000*60*60;
 
+	Random random = new Random();
+
 	public void startApp() { // throws MIDletStateChangeException {
 		// init Tasks
-		Tasks.addElement(new Task("jMinder",0));
-		Tasks.addElement(new Task("ARMatura",0));
+		Tasks.addElement(new Task("jMinder",random.nextInt()));
+		Tasks.addElement(new Task("ARMatura",random.nextInt()));
+		Tasks.addElement(new Task("GrowerBox",random.nextInt()));
 		// def menus
 		// main
 		frmMain.addCommand(cmdNew);
@@ -132,6 +148,10 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 		frmNew.append(fldTitle);
 		frmNew.append(fldDeadLine);
 		frmNew.addCommand(cmdNewOK);
+		// edit
+		frmEdit.addCommand(cmdOK);
+		frmEdit.addCommand(cmdCancel);
+		frmEdit.setCommandListener(this);
 		//frmNew.addCommand(cmdCancel);
 		frmNew.setCommandListener(this);
 		// tasks
@@ -141,6 +161,10 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 		lstTasks.addCommand(cmdDelete);
 		lstTasks.addCommand(cmdEdit);
 		lstTasks.setCommandListener(this);
+		// ligher
+		cnvLigher.addCommand(cmdOK);
+		cnvLigher.setCommandListener(this);
+		frmMain.addCommand(cmdLighter);
 		// show main form
 		display.setCurrent(frmMain);
 	}
@@ -150,6 +174,7 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 			if (c==cmdExit) destroyApp(false);
 			if (c==cmdNew) display.setCurrent(frmNew);
 			if (c==cmdTasks) display.setCurrent(lstTasks);
+			if (c==cmdLighter) display.setCurrent(cnvLigher);
 		}
 		if (d==frmNew) {
 			if (c==cmdNewOK) {
@@ -163,13 +188,22 @@ public class main extends MIDlet implements CommandListener, ItemCommandListener
 			}
 			display.setCurrent(frmMain);
 		}
+		if (d==frmEdit) {
+			updTasks(); updMain();
+			display.setCurrent(frmMain);
+		}
 		if (d==lstTasks) {
 			if (c==cmdOKex) display.setCurrent(frmMain);
 			if (c==cmdNew) display.setCurrent(frmNew);
-			if (c==cmdDelete) {
+			if (c==cmdEdit) display.setCurrent(frmEdit);
+			if (c==cmdDelete) { 
 				Tasks.removeElementAt(lstTasks.getSelectedIndex());
-				updTasks();
+				updTasks(); updMain();
 			}
+		}
+		if (d==cnvLigher) {
+			if (c==cmdOK) display.setCurrent(frmMain);
+			//if (c==cmdMorze) display.setCurrent(frmMorze);
 		}
 	}
 
