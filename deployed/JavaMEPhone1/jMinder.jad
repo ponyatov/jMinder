@@ -1,6 +1,6 @@
 MIDlet-1: jMinder,/clock-64x64.png,jMinder.jMinder
 MIDlet-Icon: /clock-64x64.png
-MIDlet-Jar-Size: 9379
+MIDlet-Jar-Size: 10073
 MIDlet-Jar-URL: jMinder.jar
 MIDlet-Name: jMinder
 MIDlet-Vendor: Dmitry Ponyatov

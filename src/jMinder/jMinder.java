@@ -14,13 +14,15 @@ import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Graphics;
+import javax.microedition.lcdui.List;
 import javax.microedition.lcdui.StringItem;
+import javax.microedition.lcdui.TextField;
 
 public class jMinder extends MIDlet implements CommandListener {
 
 	int MS_IN_SECOND =1000;
-	int MS_IN_MINUTE =1000*60;
-	int MS_IN_HOUR   =1000*60*60;
+	int MS_IN_MINUTE =1000;//*60;
+	int MS_IN_HOUR   =1000*6;//0*60;
 
 	Display display = Display.getDisplay(this);
 
@@ -46,6 +48,7 @@ public class jMinder extends MIDlet implements CommandListener {
 	protected void pauseApp() 				{ }
 
 	Vector Tasks = new Vector();
+	boolean Tasks_lock=false;
 	private void Tasks_reSort() {
 		Task A,B;
 		if (Tasks.size()>1) {
@@ -66,12 +69,13 @@ public class jMinder extends MIDlet implements CommandListener {
 	private void updMain() {
 		frmMain.deleteAll();
 		frmMain.append(fldTS);
+		Task T;
 		for (int i=0;i<Tasks.size();i++) {
-			Task T = (Task) Tasks.elementAt(i);
+			T = (Task) Tasks.elementAt(i);
 			frmMain.append(new StringItem(T.DeadLine+"h", T.Title+"\n"));
 		}
 	}
-	
+
 	private String i2s2(int x) {
 		if (x>=10) 
 			return ""+x;
@@ -104,7 +108,20 @@ public class jMinder extends MIDlet implements CommandListener {
 	TimerTask timer1h = new TimerTask() { public void run() { 
 		for (int i=0;i<Tasks.size();i++) { ((Task) Tasks.elementAt(i)).tick(); }
 		}};
-		
+  		
+	Form frmNew = new Form("new");
+	TextField fldTitle = new TextField("Title", "", 1024, TextField.ANY);
+	TextField fldDeadLine = new TextField("DeadLine [hours]", "1", 2, TextField.DECIMAL);
+	
+	List frmDelete = new List("Delete", List.MULTIPLE);
+	private void updDelete() {
+		frmDelete.deleteAll();
+		Task T;
+		for (int i=0;i<Tasks.size();i++) {
+			T = (Task) Tasks.elementAt(i);
+			frmDelete.append(T.Title+"\n", null);
+		}
+	}
 
 	protected void startApp() {
 		// init Tasks
@@ -115,11 +132,22 @@ public class jMinder extends MIDlet implements CommandListener {
 		// canvas
 		cnvLigher.addCommand(cmdOK);
 		cnvLigher.setCommandListener(this);
+		// new
+		frmNew.append(fldTitle);
+		frmNew.append(fldDeadLine);
+		frmNew.addCommand(cmdOK);
+		frmNew.addCommand(cmdCancel);
+		frmNew.setCommandListener(this);
+		// delete
+		frmDelete.addCommand(cmdOK);
+		frmDelete.addCommand(cmdCancel);
+		frmDelete.setCommandListener(this);
 		// main/commands
 		frmMain.addCommand(cmdExit);
 		frmMain.addCommand(cmdLighter);
 		frmMain.addCommand(cmdNew);
 		frmMain.addCommand(cmdTasks);
+		frmMain.addCommand(cmdDelete);
 		frmMain.setCommandListener(this);
 		// shed timers
 		timer.schedule(timer1s, MS_IN_SECOND, MS_IN_MINUTE);
@@ -127,104 +155,36 @@ public class jMinder extends MIDlet implements CommandListener {
 		// display
 		display.setCurrent(frmMain);
 	}
-
+	
 	public void commandAction(Command c, Displayable d) {
 		if (d==cnvLigher) 	display.setCurrent(frmMain);
 		if (c==cmdExit) 	destroyApp(true);
 		if (c==cmdLighter) 	display.setCurrent(cnvLigher);
-	}
-}
-
-/*
-
-
-	public void destroyApp(boolean unconditional) { notifyDestroyed(); }
-
-	public void pauseApp() { }
-	
-	
-	Form frmNew = new Form("new");
-	TextField fldTitle = new TextField("Title", "", 1024, TextField.ANY);
-	TextField fldDeadLine = new TextField("DeadLine [hours]", "1", 2, TextField.DECIMAL);
-
-	Form frmEdit = new Form("Edit");
-
-	List lstTasks = new List("Tasks",List.EXCLUSIVE);
-	
-	private void updTasks() {
-		lstTasks.deleteAll();
-		for (int i=0;i<Tasks.size();i++) {
-			Task T = (Task) Tasks.elementAt(i);
-			lstTasks.append(T.getTitle(),null);
-		}
-	}
-	
-	public void startApp() {
-		// main
-		frmMain.addCommand(cmdNew);
-		frmMain.addCommand(cmdExit);
-		frmMain.addCommand(cmdTasks);
-		frmMain.setCommandListener(this);
-		updMain();
-		// new
-		frmNew.append(fldTitle);
-		frmNew.append(fldDeadLine);
-		frmNew.addCommand(cmdNew);
-		frmNew.setCommandListener(this);
-		// edit
-		frmEdit.append(fldTitle);
-		frmEdit.append(fldDeadLine);
-		frmEdit.addCommand(cmdOK);
-		frmEdit.addCommand(cmdCancel);
-		frmEdit.setCommandListener(this);
-		// tasks
-		lstTasks.addCommand(cmdOK);
-		lstTasks.addCommand(cmdNew);
-		lstTasks.addCommand(cmdDelete);
-		lstTasks.addCommand(cmdEdit);
-		lstTasks.setCommandListener(this);
-		updTasks();
-		// ligher
-		cnvLigher.addCommand(cmdOK);
-		cnvLigher.setCommandListener(this);
-		frmMain.addCommand(cmdLighter);
-		// show main form
-		display.setCurrent(frmMain);
-	}
-
-	public void commandAction(Command c, Displayable d) {
-		if (d==frmMain) {
-			if (c==cmdExit) destroyApp(false);
-			if (c==cmdNew) display.setCurrent(frmNew);
-			if (c==cmdTasks) display.setCurrent(lstTasks);
-			if (c==cmdLighter) display.setCurrent(cnvLigher);
-		}
+		if (c==cmdNew)		display.setCurrent(frmNew);
 		if (d==frmNew) {
-			if (c==cmdNew) {
-				Tasks.addElement(
-						new Task(
-								fldTitle.getString(),
-								Integer.parseInt(fldDeadLine.getString())
-								)
-						);
-				updMain(); updTasks();
+			if (c==cmdOK) {
+				Tasks.addElement(new Task(
+						fldTitle.getString(),
+						Integer.parseInt(fldDeadLine.getString())
+						));
+				updMain();
 			}
 			display.setCurrent(frmMain);
 		}
-		if (d==frmEdit) {
-			updTasks(); updMain();
-			display.setCurrent(lstTasks);
-		}
-		if (d==lstTasks) {
-			if (c==cmdOK) display.setCurrent(frmMain);
-			if (c==cmdNew) display.setCurrent(frmNew);
-			if (c==cmdEdit) display.setCurrent(frmEdit);
-			if (c==cmdDelete) { 
-				Tasks.removeElementAt(lstTasks.getSelectedIndex());
-				updTasks(); updMain();
+		if (c==cmdDelete)	{
+			Tasks_lock=true;
+			updDelete(); display.setCurrent(frmDelete); 
 			}
+		if (d==frmDelete) {
+			if (c==cmdOK) {
+				boolean S[] = new boolean[frmDelete.size()];
+				frmDelete.getSelectedFlags(S);
+				for (int i=0;i<S.length;i++) {
+					if (S[i]) Tasks.setElementAt(new Task("",0), i);
+				}
+			}
+			Tasks_lock=false;
+			display.setCurrent(frmMain);
 		}
-		if (d==cnvLigher) { display.setCurrent(frmMain); }
 	}
-
-*/
+}
