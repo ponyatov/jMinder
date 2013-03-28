@@ -1,5 +1,10 @@
 package jMinder;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.Timer;
@@ -7,6 +12,8 @@ import java.util.TimerTask;
 import java.util.Vector;
 
 import javax.microedition.midlet.MIDlet;
+import javax.microedition.rms.RecordStore;
+import javax.microedition.rms.RecordStoreException;
 import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
@@ -39,6 +46,8 @@ public class jMinder extends MIDlet implements CommandListener {
 	Command cmdNew 		= new Command("New", 		Command.CANCEL, 0);
 	Command cmdEdit 	= new Command("Edit", 		Command.OK, 0);
 	Command cmdDelete 	= new Command("Delete", 	Command.OK, 0);
+	Command cmdSave 	= new Command("Save", 		Command.OK, 0);
+	Command cmdLoad 	= new Command("Load", 		Command.OK, 0);
 	Command cmdLighter 	= new Command("Lighter",	Command.OK, 2);
 	Command cmdExit 	= new Command("Exit", 		Command.OK, 9);
 
@@ -134,11 +143,12 @@ public class jMinder extends MIDlet implements CommandListener {
 	}
 	
 	protected void startApp() {
+		/*
 		// init Tasks
 		Tasks.addElement(new Task("jMinder",RandRange(11)));
 		Tasks.addElement(new Task("ARMatura",RandRange(11)));
 		Tasks.addElement(new Task("GrowerBox",RandRange(11)));
-		Tasks.addElement(new Task("Home hydro",RandRange(11)));
+		*/
 		// canvas
 		cnvLigher.addCommand(cmdOK);
 		cnvLigher.setCommandListener(this);
@@ -157,6 +167,8 @@ public class jMinder extends MIDlet implements CommandListener {
 		frmMain.addCommand(cmdNew);
 		frmMain.addCommand(cmdEdit);
 		frmMain.addCommand(cmdDelete);
+		frmMain.addCommand(cmdSave);
+		frmMain.addCommand(cmdLoad);
 		frmMain.setCommandListener(this);
 		// shed timers
 		timer.schedule(timer1s, MS_IN_SECOND, MS_IN_MINUTE);
@@ -171,6 +183,53 @@ public class jMinder extends MIDlet implements CommandListener {
 	}
 	
 	public void commandAction(Command c, Displayable d) {
+		if (c==cmdSave) {
+			lockTasks=true;
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			int N = Tasks.size();
+			Task T;
+			try {
+				dos.writeInt(N);
+				for (int i=0;i<N;i++) {
+					T = (Task) Tasks.elementAt(i);
+					dos.writeUTF(T.Title);
+					dos.writeInt(T.DeadLine);
+				}
+				dos.flush(); dos.close();
+			} catch (IOException e) { }
+			byte[] record=baos.toByteArray();
+			try {
+				RecordStore.deleteRecordStore("jMinder");
+			} catch (RecordStoreException e) { }
+			RecordStore rms;
+			try {
+				rms = RecordStore.openRecordStore("jMinder", true);
+				rms.addRecord(record, 0, record.length);
+				rms.closeRecordStore();
+			} catch (RecordStoreException e) { }
+			reMain();
+		}
+		if (c==cmdLoad) {
+			lockTasks=true;
+			RecordStore rms;
+			byte[] record=null;
+			try {
+				rms = RecordStore.openRecordStore("jMinder", false);
+				record = rms.getRecord(1);
+				rms.closeRecordStore();
+			} catch (RecordStoreException e) { }
+			ByteArrayInputStream bais = new ByteArrayInputStream(record);
+			DataInputStream dis = new DataInputStream(bais);
+			Tasks.removeAllElements();
+			try {
+				int N = dis.readInt();
+				for (int i=0;i<N;i++) {
+					Tasks.addElement(new Task(dis.readUTF(),dis.readInt()));
+				}
+			} catch (IOException e) { }
+			reMain();
+		}
 		if (d==cnvLigher) 	reMain();
 		if (c==cmdExit) 	destroyApp(true);
 		if (c==cmdLighter) 	display.setCurrent(cnvLigher);
