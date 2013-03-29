@@ -14,6 +14,7 @@ import java.util.Vector;
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.rms.RecordStore;
 import javax.microedition.rms.RecordStoreException;
+import javax.microedition.lcdui.AlertType;
 import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
@@ -84,9 +85,11 @@ public class jMinder extends MIDlet implements CommandListener {
 		frmMain.deleteAll();
 		frmMain.append(fldTS);
 		Task T;
+		String B;
 		for (int i=0;i<Tasks.size();i++) {
 			T = (Task) Tasks.elementAt(i);
-			frmMain.append("["+i2sN(T.DeadLine,4)+"h] "+T.Title+"\n");
+			if (T.Alarm) B="o"; else B="_";
+			frmMain.append(B+"["+i2sN(T.DeadLine,4)+"h] "+T.Title+"\n");
 		}
 	}
 
@@ -107,47 +110,63 @@ public class jMinder extends MIDlet implements CommandListener {
 	}
 	
 	Timer timer = new Timer();
-	TimerTask timer1s = new TimerTask() { public void run() {
-		if (!lockTasks) 
-			Tasks_reSort();
-		updTS(); updMain();
-		}};
-	TimerTask timer1h = new TimerTask() { public void run() {
-		if (!lockTasks) 
-			for (int i=0;i<Tasks.size();i++) 
-				((Task) Tasks.elementAt(i)).tick();
-		}};
+	TimerTask timer1s = new TimerTask() {
+		Task T;
+		public void run() {
+			if (!lockTasks) {
+				Tasks_reSort();
+				for (int i = 0; i < Tasks.size(); i++) {
+					T = (Task) Tasks.elementAt(i);
+					if (T.DeadLine < 2 && T.Alarm)
+						AlertType.ALARM.playSound(display);
+				}
+				updTS();
+				updMain();
+			}
+		}
+	};
+	TimerTask timer1h = new TimerTask() {
+		public void run() {
+			if (!lockTasks)
+				for (int i = 0; i < Tasks.size(); i++)
+					((Task) Tasks.elementAt(i)).tick();
+		}
+	};
   		
 	List frmSelect = new List("Select", List.EXCLUSIVE);
-	Command frmSelect_caller=null;
+	Command frmSelect_caller = null;
+
 	private void updSelect(String Title) {
 		frmSelect.setTitle(Title);
 		frmSelect.deleteAll();
 		Task T;
-		for (int i=0;i<Tasks.size();i++) {
+		for (int i = 0; i < Tasks.size(); i++) {
 			T = (Task) Tasks.elementAt(i);
 			frmSelect.append(T.Title, null);
 		}
 	}
 	
 	Form frmEdit = new Form("edit");
-	Command frmEdit_caller=null;
-	Task frmEdit_item=null;
+	Command frmEdit_caller = null;
+	Task frmEdit_item = null;
 	TextField fldTitle = new TextField("Title", "", 64, TextField.ANY);
 	TextField fldDeadLine = new TextField("DeadLine [hours]", "1", 3, TextField.DECIMAL);
-	private void updEdit(String Title,Task T) {
+	TextField fldAlarm = new TextField("Alarm", "x", 1, TextField.ANY);
+
+	private void updEdit(String Title, Task T) {
 		frmEdit.setTitle(Title);
-		frmEdit_item=T;
+		frmEdit_item = T;
 		fldTitle.setString(T.Title);
 		fldDeadLine.setString(Integer.toString(T.DeadLine));
+		if (T.Alarm) fldAlarm.setString("x"); else fldAlarm.setString("");
 	}
 	
 	protected void startApp() {
-		/*
 		// init Tasks
-		Tasks.addElement(new Task("jMinder",RandRange(11)));
-		Tasks.addElement(new Task("ARMatura",RandRange(11)));
-		Tasks.addElement(new Task("GrowerBox",RandRange(11)));
+		Tasks.addElement(new Task("jMinder", RandRange(11), true));
+		/*
+		Tasks.addElement(new Task("ARMatura", RandRange(11), false));
+		Tasks.addElement(new Task("GrowerBox", RandRange(11), false));
 		*/
 		// canvas
 		cnvLigher.addCommand(cmdOK);
@@ -155,6 +174,7 @@ public class jMinder extends MIDlet implements CommandListener {
 		// edit
 		frmEdit.append(fldTitle);
 		frmEdit.append(fldDeadLine);
+		frmEdit.append(fldAlarm);
 		frmEdit.addCommand(cmdOK);
 		frmEdit.setCommandListener(this);
 		// select
@@ -172,7 +192,7 @@ public class jMinder extends MIDlet implements CommandListener {
 		frmMain.setCommandListener(this);
 		// shed timers
 		timer.schedule(timer1s, MS_IN_SECOND, MS_IN_MINUTE);
-		timer.schedule(timer1h, MS_IN_HOUR,   MS_IN_HOUR);
+		timer.schedule(timer1h, MS_IN_HOUR,   MS_IN_HOUR  );
 		// display
 		display.setCurrent(frmMain);
 	}
@@ -195,6 +215,7 @@ public class jMinder extends MIDlet implements CommandListener {
 					T = (Task) Tasks.elementAt(i);
 					dos.writeUTF(T.Title);
 					dos.writeInt(T.DeadLine);
+					dos.writeBoolean(T.Alarm);
 				}
 				dos.flush(); dos.close();
 			} catch (IOException e) { }
@@ -225,7 +246,7 @@ public class jMinder extends MIDlet implements CommandListener {
 			try {
 				int N = dis.readInt();
 				for (int i=0;i<N;i++) {
-					Tasks.addElement(new Task(dis.readUTF(),dis.readInt()));
+					Tasks.addElement(new Task(dis.readUTF(),dis.readInt(),dis.readBoolean()));
 				}
 			} catch (IOException e) { }
 			reMain();
@@ -235,14 +256,18 @@ public class jMinder extends MIDlet implements CommandListener {
 		if (c==cmdLighter) 	display.setCurrent(cnvLigher);
 		if (c==cmdNew)		{
 			lockTasks=true;
-			Task T = new Task("",0);
+			Task T = new Task("",0,false);
 			Tasks.addElement(T);
 			updEdit("new",T);
 			display.setCurrent(frmEdit);
 		}
-		if (d==frmEdit) {
+		if (d == frmEdit) {
 			frmEdit_item.Title = fldTitle.getString();
 			frmEdit_item.DeadLine = Integer.parseInt(fldDeadLine.getString());
+			if (fldAlarm.getString().length()==0)
+				frmEdit_item.Alarm = false;
+			else
+				frmEdit_item.Alarm = true;
 			reMain();
 		}
 		if (c==cmdDelete) {

@@ -1,4 +1,4 @@
-MIDlet-Version: 0.01
+MIDlet-Version: 0.02
 MIDlet-Icon: /clock-64x64.png
 MIDlet-Vendor: Dmitry Ponyatov
 MIDlet-Jar-URL: jMinder.jar
